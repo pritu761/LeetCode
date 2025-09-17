@@ -2,29 +2,39 @@ class Solution {
 public:
     Node* flatten(Node* head) {
         if (!head) return nullptr;
-        
-        Node* dummy = new Node(0, nullptr, head, nullptr);
-        Node* prev = dummy;
-        stack<Node*> st;
-        st.push(head);
+        dfs(head);
+        return head;
+    }
 
-        while (!st.empty()) {
-            Node* curr = st.top(); st.pop();
+    // helper returns the tail after flattening
+    Node* dfs(Node* node) {
+        Node* curr = node;
+        Node* last = node;
 
-            prev->next = curr;
-            curr->prev = prev;
-
-            if (curr->next) st.push(curr->next);
+        while (curr) {
+            Node* nextNode = curr->next;
+            
             if (curr->child) {
-                st.push(curr->child);
+                Node* childHead = curr->child;
+                Node* childTail = dfs(childHead);  // recursion gives us the tail
+
+                // splice child list
+                curr->next = childHead;
+                childHead->prev = curr;
                 curr->child = nullptr;
+
+                if (nextNode) {
+                    childTail->next = nextNode;
+                    nextNode->prev = childTail;
+                }
+
+                last = childTail;
+            } else {
+                last = curr;
             }
-
-            prev = curr;
+            curr = nextNode;
         }
-
-        // detach dummy
-        dummy->next->prev = nullptr;
-        return dummy->next;
+        return last; // return the tail
     }
 };
+
