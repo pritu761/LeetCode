@@ -1,24 +1,38 @@
 class Solution {
 public:
     int maxFrequency(vector<int>& nums, int k, int numOperations) {
-        int mx = *max_element(nums.begin(), nums.end());
-        int n = mx + k + 2;
-        vector<int> f(n, 0);
-        for (int x : nums) f[x]++;
+        int maxEl = *max_element(begin(nums), end(nums)) + k;
 
-        vector<int> pre(n, 0);
-        pre[0] = f[0];
-        for (int i = 1; i < n; i++) pre[i] = pre[i - 1] + f[i];
+        vector<int> freq(maxEl + 1, 0);
 
-        int ans = 0;
-        for (int t = 0; t < n; t++) {
-            if (f[t] == 0 && numOperations == 0) continue;
-            int l = max(0, t - k), r = min(n - 1, t + k);
-            int tot = pre[r] - (l > 0 ? pre[l - 1] : 0);
-            int adj = tot - f[t];
-            int val = f[t] + min(numOperations, adj);
-            ans = max(ans, val);
+        for(int &num : nums) {
+            freq[num]++;
         }
-        return ans;
+
+        //cumulative sum of frequenceis
+        for(int i = 1; i <= maxEl; i++) {
+            freq[i] += freq[i-1];
+        }
+
+        int result = 0;
+        for(int target = 0; target <= maxEl; target++) {
+            if(freq[target] == 0)
+                continue;
+            
+            int leftNum  = max(0, target-k); //l
+            int rightNum = min(maxEl, target+k); //r
+
+            int totalCount  = freq[rightNum] - (leftNum > 0 ? freq[leftNum-1] : 0);
+
+            int targetCount = freq[target] - (target > 0 ? freq[target-1] : 0);
+
+            int needConversion = totalCount - targetCount;
+
+            int maxPossibleFreq = targetCount + min(needConversion, numOperations);
+
+            result = max(result, maxPossibleFreq);
+        }
+
+        return result;
     }
 };
