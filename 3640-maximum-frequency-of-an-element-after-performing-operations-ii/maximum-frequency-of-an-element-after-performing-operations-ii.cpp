@@ -1,56 +1,41 @@
 class Solution {
 public:
     int maxFrequency(vector<int>& nums, int k, int numOperations) {
-        sort(nums.begin(),
-             nums.end()); // Sort the array for sliding window approach
+        int maxVal = *max_element(begin(nums), end(nums)) + k;
 
-        int n = nums.size();
-        int left1 = 0,
-            right1 = 0;       // Window pointers for first frequency calculation
-        int windowCount1 = 0; // Count of elements within [num - k, num + k]
-        int maxFreq = 0;      // Final answer (maximum frequency)
-        int left2 = 0;        // Second window left pointer for extended range
-        int windowCount2 = 0; // Count of elements within [num - 2k, num]
-        int sameValueCount = 0; // Frequency of current number
-        int prevValue = -1;     // Previous number for counting duplicates
+        map<int,int> diff;
+        unordered_map<int, int> freq;
 
-        for (auto num : nums) {
-            // Update count of consecutive same numbers
-            if (num == prevValue)
-                sameValueCount++;
-            else {
-                prevValue = num;
-                sameValueCount = 1;
-            }
+        for(int i = 0; i < nums.size(); i++) {
+            freq[nums[i]]++;
 
-            // Shrink window1 if left element is out of range [num - k, num + k]
-            while (nums[left1] < num - k) {
-                windowCount1--;
-                left1++;
-            }
+            int l = max(nums[i]-k, 0);
+            int r = min(nums[i]+k, maxVal);
 
-            // Expand window1 to include all elements <= num + k
-            while (right1 < n && nums[right1] <= num + k) {
-                windowCount1++;
-                right1++;
-            }
+            diff[l]++;
+            diff[r+1]--;
 
-            // Maximize frequency by replacing up to numOperations elements
-            maxFreq =
-                max(maxFreq, sameValueCount + min(windowCount1 - sameValueCount,
-                                                  numOperations));
-
-            // Update secondary window for range [num - 2k, num]
-            windowCount2++;
-            while (nums[left2] < num - 2 * k) {
-                windowCount2--;
-                left2++;
-            }
-
-            // Consider extending range fully within 2*k window
-            maxFreq = max(maxFreq, min(windowCount2, numOperations));
+            diff[nums[i]]+=0;
         }
 
-        return maxFreq;
+
+        int result = 1;
+        int cumSum = 0;
+
+        for(auto it = diff.begin(); it !=diff.end();it++) {
+            int target = it->first;
+            it->second += cumSum;
+            // diff[target] += (target > 0 ? diff[target-1] : 0);
+
+            int targetFreq     = freq[target];
+            int needConversion = it->second - targetFreq;
+
+            int maxPossibleFreq = min(needConversion, numOperations);
+
+            result = max(result, targetFreq + maxPossibleFreq);
+            cumSum = it->second;
+        }
+
+        return result;
     }
 };
