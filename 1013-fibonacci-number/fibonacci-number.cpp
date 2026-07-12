@@ -1,18 +1,20 @@
 class Solution {
 public:
+    int t[31];
+  
+    int solve(int n) {
+        if(n <= 1)
+            return n;
+        
+        if(t[n] != -1)
+            return t[n];
+        
+        return t[n] = fib(n-1) + fib(n-2);
+    }
+    
     int fib(int n) {
-
-        if(n==1){
-            return 1;
-        }
-        int result=0; 
-        int a = 0;
-        int b = 1;
-        for(int i=0;i<n-1;i++){
-            result = a+b;
-           a = b;
-           b = result;
-        }
-        return result;
+        memset(t, -1, sizeof(t));
+      
+        return solve(n);
     }
 };
